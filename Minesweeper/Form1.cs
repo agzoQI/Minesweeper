@@ -7,11 +7,20 @@ namespace Minesweeper
     public partial class Form1 : Form
     {
         private int[,] grid;
-        private int bombs;
+
+        private const int BombCellValue = 9;
+        private int CellSize = 40;
+
+        //Obtiznost gridu
+        private int x = 9, y = 9;
+        private static int bombs = 1;
+
+        private int FlagsRemaining = bombs;
 
         private bool gameActive = true;
 
         private Button resetButton;
+        private Button bombCounter;
 
         public Form1()
         {
@@ -20,20 +29,19 @@ namespace Minesweeper
 
             // Tlačítko Reset
             resetButton = new Button();
-            resetButton.Width = 40;
-            resetButton.Height = 40;
+            resetButton.Width = CellSize * x - CellSize * 4;
+            resetButton.Height = CellSize;
+            resetButton.Left = CellSize * 2;
             resetButton.Text = "Reset";
             resetButton.Click += Reset_Click;
             Controls.Add(resetButton);
-
+            
             ShowGrid(grid);
         }
 
         private void InitializeGame()
         {
-            //            [x, y]
-            grid = new int[9, 9];
-            bombs = 7;
+            grid = new int[x, y];
 
             GenerateBombs(grid, bombs);
             AroundBombs(grid);
@@ -41,10 +49,18 @@ namespace Minesweeper
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            bombCounter = new Button();
+            bombCounter.Width = CellSize * 2;
+            bombCounter.Height = CellSize;
+            bombCounter.BackColor = Color.LightGray;
+            bombCounter.Text = FlagsRemaining.ToString();
+            Controls.Add(bombCounter);
 
+            
+            
         }
 
-        public static void GenerateBombs(int[,] grid, int bombs)
+        public void GenerateBombs(int[,] grid, int bombs)
         {
             Random r = new Random();
 
@@ -61,14 +77,14 @@ namespace Minesweeper
                 int x = r.Next(0, grid.GetLength(0));
                 int y = r.Next(0, grid.GetLength(1));
 
-                if (grid[x, y] == 9)
+                if (grid[x, y] == BombCellValue)
                     i--;
                 else
-                    grid[x, y] = 9;
+                    grid[x, y] = BombCellValue;
             }
         }
 
-        public static void AroundBombs(int[,] grid)
+        public void AroundBombs(int[,] grid)
         {
             //Vsechny prvky gridu
             for (int xX = 0; xX < grid.GetLength(0); xX++)
@@ -76,7 +92,7 @@ namespace Minesweeper
                 for (int yY = 0; yY < grid.GetLength(1); yY++)
                 {
                     //Kdyz bomba
-                    if (grid[xX, yY] == 9)
+                    if (grid[xX, yY] == BombCellValue)
                     {
                         //Prochazi prvky kolem bomby
                         int centerX = xX;
@@ -89,7 +105,7 @@ namespace Minesweeper
                                 //Kontroluje jestli neni mimo pole
                                 if (x >= 0 && x < grid.GetLength(0) && y >= 0 && y < grid.GetLength(1))
                                 {
-                                    if (grid[x, y] != 9)
+                                    if (grid[x, y] != BombCellValue)
                                     {
                                         grid[x, y]++;
 
@@ -123,10 +139,10 @@ namespace Minesweeper
                 for (int y = 0; y < grid.GetLength(1); y++)
                 {
                     Button b = new Button();
-                    b.Left = x * 40;
-                    b.Width = 40;
-                    b.Top = y * 40 + 40;
-                    b.Height = 40;
+                    b.Left = x * CellSize;
+                    b.Width = CellSize;
+                    b.Top = y * CellSize + CellSize;
+                    b.Height = CellSize;
                     b.Text = $"[{x},{y}]";
                     b.MouseDown += ToggleFlag;
                     Controls.Add(b);
@@ -134,7 +150,7 @@ namespace Minesweeper
                     //Convertuje zkryte prvky v gridu
                     switch (grid[x, y])
                     {
-                        case 9:
+                        case BombCellValue:
                             b.Click += Click9;
                             break;
                         case 0:
@@ -178,8 +194,8 @@ namespace Minesweeper
 
         private Button GetButtonAt(int x, int y)
         {
-            int targetLeft = x * 40;
-            int targetTop = y * 40 + 40;
+            int targetLeft = x * CellSize;
+            int targetTop = y * CellSize + CellSize;
 
             foreach (Control control in Controls)
             {
@@ -202,7 +218,7 @@ namespace Minesweeper
 
                     switch (grid[x, y])
                     {
-                        case 9:
+                        case BombCellValue:
                             b.Text = "X";
 
                             break;
@@ -249,7 +265,7 @@ namespace Minesweeper
             Button currentButton = GetButtonAt(x, y);
 
             // Check if the current cell is already revealed or has a bomb
-            if (currentButton.Text == " " || currentButton.Text == "F" || grid[x, y] == 9)
+            if (currentButton.Text == " " || currentButton.Text == "F" || grid[x, y] == BombCellValue)
             {
                 return;
             }
@@ -285,7 +301,7 @@ namespace Minesweeper
             {
                 for (int j = y - 1; j <= y + 1; j++)
                 {
-                    if (i >= 0 && i < grid.GetLength(0) && j >= 0 && j < grid.GetLength(1) && grid[i, j] == 9)
+                    if (i >= 0 && i < grid.GetLength(0) && j >= 0 && j < grid.GetLength(1) && grid[i, j] == BombCellValue)
                     {
                         count++;
                     }
@@ -321,18 +337,20 @@ namespace Minesweeper
             if (gameActive)
             {
                 Button button = (Button)sender;
-                int x = button.Left / 40;
-                int y = (button.Top - 40) / 40;
+                int x = button.Left /   CellSize;
+                int y = (button.Top - CellSize) / CellSize;
 
                 if (e.Button == MouseButtons.Right)
                 {
                     if (button.Text == $"[{x},{y}]")
                     {
                         button.Text = "F"; // Umístění vlajky
+                        FlagsRemaining--;
                     }
                     else if (button.Text == "F")
                     {
                         button.Text = $"[{x},{y}]"; // Odstranění vlajky
+                        FlagsRemaining++;
                     }
                 }
             }
@@ -361,8 +379,8 @@ namespace Minesweeper
             if (gameActive)
             {
                 Button b = (Button)sender;
-                int x = b.Left / 40;
-                int y = (b.Top - 40) / 40;
+                int x = b.Left / CellSize;
+                int y = (b.Top - CellSize) / CellSize;
 
                 if (b.Text == " ")
                     return;
