@@ -13,7 +13,7 @@ namespace Minesweeper
 
         //Obtiznost gridu
         private int x = 9, y = 9;
-        private static int bombs = 1;
+        private static int bombs = 5;
 
         private int FlagsRemaining = bombs;
 
@@ -35,8 +35,17 @@ namespace Minesweeper
             resetButton.Text = "Reset";
             resetButton.Click += Reset_Click;
             Controls.Add(resetButton);
-            
+
+            bombCounter = new Button();
+            bombCounter.Width = CellSize * 2;
+            bombCounter.Height = CellSize;
+            bombCounter.BackColor = Color.LightGray;
+            bombCounter.Text = FlagsRemaining.ToString();
+            Controls.Add(bombCounter);
+
             ShowGrid(grid);
+
+            
         }
 
         private void InitializeGame()
@@ -49,15 +58,12 @@ namespace Minesweeper
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            bombCounter = new Button();
-            bombCounter.Width = CellSize * 2;
-            bombCounter.Height = CellSize;
-            bombCounter.BackColor = Color.LightGray;
-            bombCounter.Text = FlagsRemaining.ToString();
-            Controls.Add(bombCounter);
 
-            
-            
+
+            UpdateCounter();
+
+
+
         }
 
         public void GenerateBombs(int[,] grid, int bombs)
@@ -122,10 +128,28 @@ namespace Minesweeper
         {
             foreach (Control control in Controls.OfType<Button>().ToList())
             {
-                if (control != resetButton)
+                if (control != resetButton && control != bombCounter)
                 {
                     Controls.Remove(control);
                     control.Dispose();
+                }
+            }
+        }
+
+        public void UpdateCounter()
+        {
+            foreach (Control control in Controls.OfType<Button>().ToList())
+            {
+                if (control == bombCounter)
+                {
+                    Controls.Remove(control);
+                    control.Dispose();
+                    bombCounter = new Button();
+                    bombCounter.Width = CellSize * 2;
+                    bombCounter.Height = CellSize;
+                    bombCounter.BackColor = Color.LightGray;
+                    bombCounter.Text = FlagsRemaining.ToString();
+                    Controls.Add(bombCounter);
                 }
             }
         }
@@ -187,9 +211,11 @@ namespace Minesweeper
 
         private void ResetGame()
         {
-            InitializeGame();
-            ShowGrid(grid);
             gameActive = true;
+            FlagsRemaining = bombs;
+            InitializeGame();
+            UpdateCounter();
+            ShowGrid(grid);
         }
 
         private Button GetButtonAt(int x, int y)
@@ -352,6 +378,8 @@ namespace Minesweeper
                         button.Text = $"[{x},{y}]"; // Odstranění vlajky
                         FlagsRemaining++;
                     }
+
+                    UpdateCounter();
                 }
             }
         }
