@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualBasic.Devices;
+using System.Drawing.Text;
 using System.Runtime.CompilerServices;
 using static System.Reflection.Metadata.BlobBuilder;
 
@@ -13,7 +14,7 @@ namespace Minesweeper
 
         //Obtiznost gridu
         private int x = 9, y = 9;
-        private static int bombs = 5;
+        private static int bombs = 10;
 
         private int FlagsRemaining = bombs;
 
@@ -25,6 +26,7 @@ namespace Minesweeper
         public Form1()
         {
             InitializeComponent();
+            InitializeFont();
             InitializeGame();
 
             // Tlačítko Reset
@@ -54,16 +56,51 @@ namespace Minesweeper
 
             GenerateBombs(grid, bombs);
             AroundBombs(grid);
+
+            
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
-
             UpdateCounter();
 
+        }
 
+        private void InitializeFont()
+        {
+            // Název souboru fontu (upravte podle vašeho souboru)
+            string fontFileName = "mine-sweeper.ttf";
 
+            // Kontrola, zda je font v požadované složce
+            string fontPath = Path.Combine(Application.StartupPath, fontFileName);
+
+            if (!File.Exists(fontPath))
+            {
+                // Pokud není, zkopírujte font do složky s aplikací
+                File.Copy(Path.Combine("Fonts", fontFileName), fontPath);
+            }
+
+            // Načtěte font ze souboru
+            Font customFont = LoadFont(fontPath);
+
+            // Nastavte font pro celý formulář
+            this.Font = customFont;
+        }
+
+        private Font LoadFont(string fontPath)
+        {
+            try
+            {
+                // Načtěte font ze souboru
+                PrivateFontCollection privateFonts = new PrivateFontCollection();
+                privateFonts.AddFontFile(fontPath);
+                return new Font(privateFonts.Families[0], 8, FontStyle.Regular);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Chyba při načítání fontu: {ex.Message}", "Chyba", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return SystemFonts.DefaultFont; // Pokud dojde k chybě, použijte výchozí font
+            }
         }
 
         public void GenerateBombs(int[,] grid, int bombs)
@@ -114,7 +151,6 @@ namespace Minesweeper
                                     if (grid[x, y] != BombCellValue)
                                     {
                                         grid[x, y]++;
-
                                     }
                                 }
                             }//
@@ -240,13 +276,12 @@ namespace Minesweeper
                 for (int y = 0; y < grid.GetLength(1); y++)
                 {
                     Button b = GetButtonAt(x, y);
-                    b.Enabled = false; // Disable further clicks
+                    //b.Enabled = false; // Disable further clicks
 
                     switch (grid[x, y])
                     {
                         case BombCellValue:
-                            b.Text = "X";
-
+                            b.Text = "*";
                             break;
                         case 0:
                             b.Text = " ";
@@ -396,9 +431,8 @@ namespace Minesweeper
             if (gameActive)
             {
                 Button b = (Button)sender;
-                b.Text = "X";
+                b.Text = "*";
                 RevealAllCells();
-                b.BackColor = Color.Red;
                 gameActive = false;
             }
         }
@@ -407,6 +441,7 @@ namespace Minesweeper
             if (gameActive)
             {
                 Button b = (Button)sender;
+                //b.BackColor = Color.Gray;
                 int x = b.Left / CellSize;
                 int y = (b.Top - CellSize) / CellSize;
 
@@ -422,7 +457,7 @@ namespace Minesweeper
             {
                 Button b = (Button)sender;
                 b.Text = "1";
-                //b.BackColor = Color.LightBlue;
+                b.ForeColor = Color.Blue;
             }
         }
         private void Click2(object sender, EventArgs e)
@@ -431,7 +466,7 @@ namespace Minesweeper
             {
                 Button b = (Button)sender;
                 b.Text = "2";
-                //b.BackColor = Color.LightGreen;
+                b.ForeColor = Color.Green;
             }
         }
         private void Click3(object sender, EventArgs e)
@@ -440,7 +475,7 @@ namespace Minesweeper
             {
                 Button b = (Button)sender;
                 b.Text = "3";
-                //b.BackColor = Color.IndianRed;
+                b.ForeColor = Color.Red;
             }
 
         }
@@ -448,10 +483,9 @@ namespace Minesweeper
         {
             if (gameActive)
             {
-                //tmave modra
                 Button b = (Button)sender;
                 b.Text = "4";
-                //b.BackColor = Color.DarkBlue;
+                b.ForeColor = Color.DarkBlue;
             }
 
         }
@@ -459,36 +493,36 @@ namespace Minesweeper
         {
             if (gameActive)
             {
-                //tmave cervena
                 Button b = (Button)sender;
                 b.Text = "5";
+                b.ForeColor = Color.DarkRed;
             }
         }
         private void Click6(object sender, EventArgs e)
         {
             if (gameActive)
             {
-                //sedo modra idk
                 Button b = (Button)sender;
                 b.Text = "6";
+                b.ForeColor = Color.AliceBlue;
             }
         }
         private void Click7(object sender, EventArgs e)
         {
             if (gameActive)
             {
-                //cerna
                 Button b = (Button)sender;
                 b.Text = "7";
+                b.ForeColor = Color.Black;
             }
         }
         private void Click8(object sender, EventArgs e)
         {
             if (gameActive)
             {
-                //seda
                 Button b = (Button)sender;
                 b.Text = "8";
+                b.ForeColor = Color.DarkGray;
             }
         }
     
