@@ -333,13 +333,12 @@ namespace Minesweeper
 
             // Count the number of adjacent bombs
             int adjacentBombs = CountAdjacentBombs(x, y);
-            int flaggedCount = CountFlaggedCells(x, y);
 
             // Reveal the current cell with the appropriate number or an empty space
             currentButton.Text = (adjacentBombs > 0) ? adjacentBombs.ToString() : " ";
 
             // If the current cell has no adjacent bombs, recursively call flood-fill on its neighbors
-            if (adjacentBombs == flaggedCount)
+            if (adjacentBombs == 0)
             {
                 for (int i = x - 1; i <= x + 1; i++)
                 {
@@ -372,27 +371,6 @@ namespace Minesweeper
             return count;
         }
 
-        private int CountFlaggedCells(int x, int y)
-        {
-            int count = 0;
-
-            for (int i = x - 1; i <= x + 1; i++)
-            {
-                for (int j = y - 1; j <= y + 1; j++)
-                {
-                    if (i >= 0 && i < grid.GetLength(0) && j >= 0 && j < grid.GetLength(1))
-                    {
-                        Button button = GetButtonAt(i, j);
-                        if (button != null && button.Text == "F")
-                        {
-                            count++;
-                        }
-                    }
-                }
-            }
-
-            return count;
-        }
         private void ToggleFlag(object sender, MouseEventArgs e)
         {
             if (gameActive)
@@ -403,7 +381,7 @@ namespace Minesweeper
 
                 if (e.Button == MouseButtons.Right)
                 {
-                    if (button.Text == $"[{x},{y}]")
+                    if (button.Text == $"[{x},{y}]" && FlagsRemaining > 0)
                     {
                         button.Text = "F"; // Umístění vlajky
                         FlagsRemaining--;
@@ -432,6 +410,7 @@ namespace Minesweeper
             {
                 Button b = (Button)sender;
                 b.Text = "*";
+                b.BackColor = Color.Red;
                 RevealAllCells();
                 gameActive = false;
             }
